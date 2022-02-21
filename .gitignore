@@ -34,3 +34,4 @@
 #JUCE Libs
 **/simpleEQ/Builds
 **/simpleEQ/JuceLibraryCode
+**/.vs

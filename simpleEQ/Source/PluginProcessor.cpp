@@ -166,7 +166,8 @@ bool SimpleEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* SimpleEQAudioProcessor::createEditor()
 {
-    return new SimpleEQAudioProcessorEditor (*this);
+//    return new SimpleEQAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor (*this);
 }
 
 //==============================================================================
@@ -184,6 +185,53 @@ void SimpleEQAudioProcessor::setStateInformation (const void* data, int sizeInBy
 }
 
 //==============================================================================
+juce::AudioProcessorValueTreeState::ParameterLayout 
+    SimpleEQAudioProcessor::createParameterLayout() 
+{
+    //Three EQ bands
+    //  low and high have a cutoff frequency and cutoff slope
+    //  parametric has frequency, gain, and quality (narrow/wide)
+
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    //adding a float audio paramter, for low cut because that is what we use with a slider
+    layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", 
+        "LowCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        20.f));
+
+    //adding a float audio paramter for high cut
+    layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq",
+        "HighCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        20000.f));
+
+    //adding a float audio paramter for peak freq
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq",
+        "Peak Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        750.f));
+
+    //adding a float audio paramter for peak gain
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain",
+        "Peak Gain", juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+        0.0f));
+
+    //adding a float audio paramter for Peak Quality (width)
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Quality",
+        "Peak Quality", juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+        1.f));
+
+    //adding a choice audio paramter for octaves - we only want 4 octave choices
+    //Create one for the high cut and for the low cut
+    juce::StringArray octaveArray{ "12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct"};
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope",
+        "LowCut Slope", octaveArray, 0));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope",
+        "HighCut Slope", octaveArray, 0));
+
+    return layout;
+}
+//============================================================================== 
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
